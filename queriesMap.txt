@@ -1,0 +1,26 @@
+
+ADMINa: blah blah blahHH
+ADMINb: "
+ADMINc: "
+ADMINd: "
+ADMINe: "
+ADMINf: "
+ADMINg: "
+ADMINq1: SELECT c.title AS conversation_title, m.timestamp AS message_time, m.sender_role AS sender_role, m.content AS message_content FROM instuser u JOIN conversation c ON u.userid = c.userid JOIN message m ON c.chatid = m.chatid WHERE u.username = iList.get(0) AND m.bookmarked = 1 ORDER BY m.timestamp
+ADMINq2: SELECT u.username AS username, u.email AS email, SUM(i.amount) AS total_amount_owed, MAX(c.created_at) AS last_conversation_date FROM instuser u JOIN invoice i ON u.userid = i.userid LEFT JOIN conversation c ON u.userid = c.userid WHERE UPPER(i.payment_status) = 'UNPAID' GROUP BY u.username, u.email ORDER BY total_amount_owed DESC, u.username
+ADMINq3: SELECT * FROM ( SELECT p.persona_name AS persona_name, ROUND(100 * SUM(CASE WHEN f.rating > 0 THEN 1 ELSE 0 END) / COUNT(f.feedback_id), 2) AS thumbs_up_percent, COUNT(f.feedback_id) AS feedback_count FROM persona p JOIN conversation c ON p.persona_id = c.persona_id JOIN message m ON c.chatid = m.chatid JOIN feedback f ON f.message_id = m.message_id WHERE m.sender_role = 'AI' GROUP BY p.persona_name HAVING COUNT(f.feedback_id) > 0 ORDER BY thumbs_up_percent DESC, feedback_count DESC ) WHERE ROWNUM = 1
+ADMINq4: SELECT u.username AS username, mt.tier_name AS tier_name, COUNT(m.message_id) AS message_count, ROUND(AVG(f.rating), 2) AS avg_feedback_rating FROM instuser u JOIN membershiptier mt ON u.tier_name = mt.tier_name LEFT JOIN conversation c ON u.userid = c.userid LEFT JOIN message m ON c.chatid = m.chatid LEFT JOIN feedback f ON f.message_id = m.message_id WHERE mt.tier_name = iList.get(0) GROUP BY u.username, mt.tier_name ORDER BY message_count DESC, avg_feedback_rating DESC, u.username
+
+USERaa: "
+USERab: "
+USERac: "
+USERba: "
+USERab: "
+USERac: "
+USERca: "
+USERab: "
+USERac: "
+USERda: "
+USERdb: "
+USERdc: "
+USERea: "

@@ -17,11 +17,17 @@
  *
  * This program expects two args; a username and password.
  * But you can just let it prompt you if you want.
+ * It also requires the file queriesMap.txt, which maps query inputs to the actual queries.
  * 
  * Known Bugs: None!
  * Unknown Bugs: Hopefully None!
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -30,7 +36,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
@@ -43,9 +51,38 @@ public class Main {
 		
 		Scanner scanUse = new Scanner(System.in);
 		
-		// TODO: Uncomment this
+		HashMap<String, String> toQuery = new HashMap<>();
+		BufferedReader readr = null;
+		try {
+			readr = new BufferedReader(new FileReader(new File("queriesMap.txt")));
+		} catch (FileNotFoundException e) {
+			System.out.println("Error finding/reading queriesMap!");
+			scanUse.close();
+			return;
+		}
 		
-		/*
+		String line = "";
+		try {
+			while ((line = readr.readLine()) != null) {
+				String[] splitLine = line.split(":", 2);
+				if (splitLine.length == 2) {
+					toQuery.put(splitLine[0], splitLine[1].strip());
+				}
+			}
+		} catch (IOException e) {
+			System.out.println("Read Failure!");
+			scanUse.close();
+			return;
+		}
+		
+		try {
+			readr.close();
+		} catch (IOException e) {
+			System.out.println("Failed to close reader..?");
+			scanUse.close();
+			return;
+		}
+		
 		// Simple prompt / arg checker.
 		if (args.length >= 1) {
 			username = args[0];
@@ -82,12 +119,9 @@ public class Main {
                 System.err.println("\tErrorCode: " + e.getErrorCode());
                 System.exit(-1);
         }
-        */
         
         // We loop until it's over.
 		
-		// TODO: Comment this out
-		Connection dbconn = null;
         
         while (true) {
         	ArrayList<String> inputList = new ArrayList<String>();
@@ -102,15 +136,15 @@ public class Main {
         	
         	if (nextLine[0].toLowerCase().startsWith("a")) {
         		// No args are needed.
-        		adminpanel(scanUse, inputList, dbconn);
+        		adminpanel(scanUse, inputList, dbconn, toQuery);
         	} else if (nextLine[0].toLowerCase().startsWith("b")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Username: ") == 1) {
         			continue;
         		}
-        		userpanel(scanUse, inputList, dbconn);
+        		userpanel(scanUse, inputList, dbconn, toQuery);
         	} else if (nextLine[0].toLowerCase().startsWith("c")) {
         		// Same here
-        		extraspanel(scanUse, inputList, dbconn);
+        		extraspanel(scanUse, inputList, dbconn, toQuery);
         	} else if (nextLine[0].toLowerCase().startsWith("exit")) {
         		break;
         	}
@@ -139,7 +173,8 @@ public class Main {
 		return 0;
 	}
 	
-	public static void adminpanel(Scanner scanUse, ArrayList<String> inputList, Connection dbconn) {
+	public static void adminpanel(Scanner scanUse, ArrayList<String> inputList, Connection dbconn,
+			HashMap<String, String> queries) {
 		inputList.clear();
 		while (true) {
         	System.out.println("Admin Panel:");
@@ -161,69 +196,74 @@ public class Main {
         	String[] nextLine = scanUse.nextLine().split(" ");
         	if (nextLine.length == 0) continue;
         	
-        	if (nextLine[0].toLowerCase().startsWith("a")) {
+        	if (nextLine[0].toLowerCase().equals("a")) {
         		if (getInput(scanUse, inputList, nextLine, "idk a lot of args here") == 1) {
         			continue;
         		}
         		//queryAddUser(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("b")) {
+        	} else if (nextLine[0].toLowerCase().equals("b")) {
         		if (getInput(scanUse, inputList, nextLine, "idk a lot of args here") == 1) {
         			continue;
         		}
         		//queryUpdateUser(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("c")) {
+        	} else if (nextLine[0].toLowerCase().equals("c")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Username: ") == 1) {
         			continue;
         		}
         		//queryDeleteUser(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("d")) {
+        	} else if (nextLine[0].toLowerCase().equals("d")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Username: ",
         				"Input Subscription Tier: ") == 1) {
         			continue;
         		}
         		//queryUpdateSub(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("e")) {
+        	} else if (nextLine[0].toLowerCase().equals("e")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Username: ") == 1) {
         			continue;
         		}
         		//queryGenerateInvoice(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("f")) {
+        	} else if (nextLine[0].toLowerCase().equals("f")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Ticket ID: ",
         				"Input Agent ID: ") == 1) {
         			continue;
         		}
         		// How to get the ID's? I duno, might need more queries.
         		//queryAssignTicket(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("f")) {
+        	} else if (nextLine[0].toLowerCase().equals("f")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Ticket ID: ",
         				"Input Status: ", "Input Duration: ", "Input Outcome or NULL: ") == 1) {
         			continue;
         		}
         		// How to get the ID's? I duno, might need more queries.
         		//queryModifyTicket(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("q1")) {
+        	} else if (nextLine[0].toLowerCase().equals("q1")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Username: ") == 1) {
         			continue;
         		}
         		//querySpecialOne(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("q2")) {
+        	} else if (nextLine[0].toLowerCase().equals("q2")) {
 
         		//querySpecialTwo(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("q3")) {
+        	} else if (nextLine[0].toLowerCase().equals("q3")) {
 
         		//querySpecialThree(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().startsWith("q4")) {
+        	} else if (nextLine[0].toLowerCase().equals("q4")) {
         		if (getInput(scanUse, inputList, nextLine, "???: ") == 1) {
         			continue;
         		}
         		//querySpecialFour(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().startsWith("logout")) {
         		break;
+        	} else {
+        		continue;
         	}
+        	
+        	queryPlugin(inputList, dbconn, queries.get("ADMIN" + nextLine[0].toLowerCase()));
         }
 	}
-	
-	public static void userpanel(Scanner scanUse, ArrayList<String> inputList, Connection dbconn) {
+
+	public static void userpanel(Scanner scanUse, ArrayList<String> inputList, Connection dbconn,
+			HashMap<String, String> queries) {
 		// TODO: Query here which validates that they exist.
 		boolean userFound = true;
 		if (!userFound) {
@@ -338,11 +378,16 @@ public class Main {
         		//queryCreateTicket(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("logout")) {
         		break;
+        	} else {
+        		continue;
         	}
+        	inputList.add(0, "" + userId);
+        	queryPlugin(inputList, dbconn, queries.get("USER" + nextLine[0].toLowerCase()));
         }
 	}
 	
-	public static void extraspanel(Scanner scanUse, ArrayList<String> inputList, Connection dbconn) {
+	public static void extraspanel(Scanner scanUse, ArrayList<String> inputList, Connection dbconn,
+			HashMap<String, String> queries) {
 		inputList.clear();
 		while (true) {
         	System.out.println("Extras Panel:");
@@ -359,7 +404,50 @@ public class Main {
         		//queryFillDB(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().startsWith("logout")) {
         		break;
+        	} else {
+        		continue;
         	}
+        	queryPlugin(inputList, dbconn, queries.get("DEBUG" + nextLine[0].toLowerCase()));
+        }
+	}
+	
+	private static void queryPlugin(ArrayList<String> iList, Connection dbconn, String query) {
+		/* Query is the formatted thingy
+		 */
+		Statement stmt = null;
+        ResultSet answer = null;
+        
+        String queryMod = query;
+        int indexMod = queryMod.indexOf("iList.get(");
+        	
+        while (indexMod != -1) {
+        	queryMod = queryMod.substring(0, indexMod) + iList.get(
+        			Integer.parseInt("" + queryMod.charAt(indexMod + 10)))
+        			+ queryMod.substring(indexMod + 12);
+        	indexMod = queryMod.indexOf("iList.get(");
+        }
+        
+		try {
+            stmt = dbconn.createStatement();
+            answer = stmt.executeQuery(query);
+            if (answer != null) {
+            	ResultSetMetaData deta = answer.getMetaData();
+            	int columns = deta.getColumnCount();
+            	while (answer.next()) {
+            		printLine(deta, answer, columns);
+            	}
+            }
+            System.out.println();
+
+        } catch (SQLException e) {
+
+                System.err.println("*** SQLException:  "
+                    + "Could not fetch query results.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                System.exit(-1);
+
         }
 	}
 	
@@ -411,5 +499,59 @@ public class Main {
                 System.exit(-1);
 
         }
+	}
+	
+	private static void querySpecialOne(ArrayList<String> inputList, Connection dbconn) {
+		/* This may be depreciated in favor of queryPlugin.
+		 */
+		Statement stmt = null;
+        ResultSet answer = null;
+        
+        String username = inputList.get(0);
+        
+		try {
+            stmt = dbconn.createStatement();
+            answer = stmt.executeQuery("SELECT c.title AS conversation_title,"
+            		+ " m.timestamp AS message_time,"
+            		+ " m.sender_role AS sender_role,"
+            		+ " m.content AS message_content"
+            		+ " FROM instuser u\r\n"
+            		+ " JOIN conversation c ON u.userid = c.userid"
+            		+ " JOIN message m ON c.chatid = m.chatid"
+            		+ " WHERE u.username = " + username
+            		+ " AND m.bookmarked = 1\r\n"
+            		+ " ORDER BY m.timestamp");
+            if (answer != null) {
+            	ResultSetMetaData deta = answer.getMetaData();
+            	int columns = deta.getColumnCount();
+            	while (answer.next()) {
+            		printLine(deta, answer, columns);
+            		//System.out.println("Title: " + answer.getString(1) + " Timestamp: " + answer.getDate(2)
+            		//+ " Role: " + answer.getString(3) + " Message: " + answer.getString(4));
+            	}
+            }
+            System.out.println();
+
+        } catch (SQLException e) {
+
+                System.err.println("*** SQLException:  "
+                    + "Could not fetch query results.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                System.exit(-1);
+
+        }
+	}
+	
+	
+	private static void printLine(ResultSetMetaData mSet, ResultSet set, int columns) throws SQLException {
+		StringBuilder buildor = new StringBuilder();
+		for (int i = 1; i < columns; i++) {
+			buildor.append(mSet.getColumnName(i));
+			buildor.append(": ");
+			buildor.append(set.getObject(i));
+			buildor.append(" | ");
+		}	
 	}
 }
