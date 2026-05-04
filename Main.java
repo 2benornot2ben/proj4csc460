@@ -190,7 +190,7 @@ public class Main {
         	System.out.println("q1 : List all bookmarked messages for user (Args: 1)");
         	System.out.println("q2 : List all users with unpaid invoices");
         	System.out.println("q3 : List the most helpful personas");
-        	System.out.println("q4 : ??? (Args: >1)");
+        	System.out.println("q4 : List activity & rating for members in certain tier (Args: 1)");
         	System.out.println("Logout : Return to main menu.");
         	
         	String[] nextLine = scanUse.nextLine().split(" ");
@@ -248,7 +248,7 @@ public class Main {
 
         		//querySpecialThree(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equals("q4")) {
-        		if (getInput(scanUse, inputList, nextLine, "???: ") == 1) {
+        		if (getInput(scanUse, inputList, nextLine, "Membership Tier: ") == 1) {
         			continue;
         		}
         		//querySpecialFour(inputList, dbconn);
@@ -264,16 +264,12 @@ public class Main {
 
 	public static void userpanel(Scanner scanUse, ArrayList<String> inputList, Connection dbconn,
 			HashMap<String, String> queries) {
-		// TODO: Query here which validates that they exist.
-		boolean userFound = true;
-		if (!userFound) {
+		int userId = queryLogIn(inputList, dbconn);
+		if (userId == -1) {
 			System.out.println("User not found!");
 			return;
 		}
-		
 		String user = inputList.get(0);
-		// This will probably also be found via the query
-		int userId = 0;
 		inputList.clear();
 		while (true) {
         	System.out.println("Enter query for " + user);
@@ -429,7 +425,7 @@ public class Main {
         
 		try {
             stmt = dbconn.createStatement();
-            answer = stmt.executeQuery(query);
+            answer = stmt.executeQuery(queryMod);
             if (answer != null) {
             	ResultSetMetaData deta = answer.getMetaData();
             	int columns = deta.getColumnCount();
@@ -501,6 +497,34 @@ public class Main {
         }
 	}
 	
+	private static int queryLogIn(ArrayList<String> inputList, Connection dbconn) {
+		Statement stmt = null;
+        ResultSet answer = null;
+        
+        String username = inputList.get(0);
+        
+		try {
+            stmt = dbconn.createStatement();
+            answer = stmt.executeQuery("SELECT userid FROM instuser WHERE username = '" + username + "'");
+            if (answer != null) {
+            	while (answer.next()) {
+            		return (answer.getInt(1));
+            	}
+            }
+
+        } catch (SQLException e) {
+
+                System.err.println("*** SQLException:  "
+                    + "Could not fetch query results.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
+                System.exit(-1);
+
+        }
+		return -1;
+	}
+	
 	private static void querySpecialOne(ArrayList<String> inputList, Connection dbconn) {
 		/* This may be depreciated in favor of queryPlugin.
 		 */
@@ -547,11 +571,13 @@ public class Main {
 	
 	private static void printLine(ResultSetMetaData mSet, ResultSet set, int columns) throws SQLException {
 		StringBuilder buildor = new StringBuilder();
-		for (int i = 1; i < columns; i++) {
+		buildor.append(" | ");
+		for (int i = 1; i <= columns; i++) {
 			buildor.append(mSet.getColumnName(i));
 			buildor.append(": ");
 			buildor.append(set.getObject(i));
 			buildor.append(" | ");
 		}	
+		System.out.println(buildor.toString());
 	}
 }
