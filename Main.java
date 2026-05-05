@@ -193,6 +193,7 @@ public class Main {
         	System.out.println("q4 : List activity & rating for members in certain tier (Args: 1)");
         	System.out.println("Logout : Return to main menu.");
         	
+        	boolean modify = false;
         	String[] nextLine = scanUse.nextLine().split(" ");
         	if (nextLine.length == 0) continue;
         	
@@ -200,33 +201,39 @@ public class Main {
         		if (getInput(scanUse, inputList, nextLine, "idk a lot of args here") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryAddUser(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equals("b")) {
         		if (getInput(scanUse, inputList, nextLine, "idk a lot of args here") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryUpdateUser(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equals("c")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Username: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryDeleteUser(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equals("d")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Username: ",
         				"Input Subscription Tier: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryUpdateSub(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equals("e")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Username: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryGenerateInvoice(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equals("f")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Ticket ID: ",
         				"Input Agent ID: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		// How to get the ID's? I duno, might need more queries.
         		//queryAssignTicket(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equals("f")) {
@@ -234,6 +241,7 @@ public class Main {
         				"Input Status: ", "Input Duration: ", "Input Outcome or NULL: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		// How to get the ID's? I duno, might need more queries.
         		//queryModifyTicket(inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equals("q1")) {
@@ -258,7 +266,8 @@ public class Main {
         		continue;
         	}
         	
-        	queryPlugin(inputList, dbconn, queries.get("ADMIN" + nextLine[0].toLowerCase()));
+        	if (!modify) queryPlugin(inputList, dbconn, queries.get("ADMIN" + nextLine[0].toLowerCase()));
+        	else queryModify(inputList, dbconn, queries.get("ADMIN" + nextLine[0].toLowerCase()));
         }
 	}
 
@@ -290,6 +299,7 @@ public class Main {
         	
         	System.out.println("Logout : Return to main menu.");
         	
+        	boolean modify = false;
         	String[] nextLine = scanUse.nextLine().split(" ");
         	if (nextLine.length == 0) continue;
         	
@@ -301,76 +311,89 @@ public class Main {
         			// Though that could have issues, too.
         			continue;
         		}
+        		modify = true;
         		//queryCreateConversation(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("ab")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Conversation Title: ",
         				"Input Message: ", "(Input AI Message too): ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryAddMessage(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("ac")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Conversation Title: ",
         				"Input Identifier: ", "Input Review OR Null", "Input Rating OR Null") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryReviewMessage(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("ba")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Conversation Title: ",
         				"Input Workspace Title: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryAddConversationToWorkspace(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("bb")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Conversation Title: ",
         				"Input Workspace Title: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryRemoveConvoFromWorkspace(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("bc")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Workspace Title: ",
         				"Input Visibility: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryCreatePersona(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("ca")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Persona Name: ",
         				"Input Persona Instructions: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryModifyPersona(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("cb")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Persona Name: ",
         				"Input Persona Instructions: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryRemovePersona(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("cc")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Persona Name: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryCreatePrompt(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("da")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Prompt Name: ",
         				"Input Prompt Category: ", "Input Prompt: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryModifyPrompt(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("db")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Prompt Name: ",
         				"Input Prompt: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryMovePromptToWS(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("dc")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Prompt Name: ",
         				"Input Workspace: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryRemoveConvoFromWorkspace(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("ea")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Topic: ") == 1) {
         			continue;
         		}
+        		modify = true;
         		//queryCreateTicket(userId, inputList, dbconn);
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("logout")) {
         		break;
@@ -378,7 +401,8 @@ public class Main {
         		continue;
         	}
         	inputList.add(0, "" + userId);
-        	queryPlugin(inputList, dbconn, queries.get("USER" + nextLine[0].toLowerCase()));
+        	if (!modify) queryPlugin(inputList, dbconn, queries.get("USER" + nextLine[0].toLowerCase()));
+        	else queryModify(inputList, dbconn, queries.get("USER" + nextLine[0].toLowerCase()));
         }
 	}
 	
@@ -387,23 +411,22 @@ public class Main {
 		inputList.clear();
 		while (true) {
         	System.out.println("Extras Panel:");
-        	System.out.println("a : Probably something that'll fill up the DB?");
+        	System.out.println("a : Print Tables");
         	System.out.println("Logout : Return to main menu.");
         	
+        	boolean modify = false;
         	String[] nextLine = scanUse.nextLine().split(" ");
         	if (nextLine.length == 0) continue;
         	
         	if (nextLine[0].toLowerCase().startsWith("a")) {
-        		if (getInput(scanUse, inputList, nextLine, "idk if thisll have args") == 1) {
-        			continue;
-        		}
-        		//queryFillDB(inputList, dbconn);
+        		
         	} else if (nextLine[0].toLowerCase().startsWith("logout")) {
         		break;
         	} else {
         		continue;
         	}
-        	queryPlugin(inputList, dbconn, queries.get("DEBUG" + nextLine[0].toLowerCase()));
+        	if (!modify) queryPlugin(inputList, dbconn, queries.get("DEBUG" + nextLine[0].toLowerCase()));
+        	else queryModify(inputList, dbconn, queries.get("DEBUG" + nextLine[0].toLowerCase()));
         }
 	}
 	
@@ -443,6 +466,40 @@ public class Main {
                 System.err.println("\tSQLState:  " + e.getSQLState());
                 System.err.println("\tErrorCode: " + e.getErrorCode());
                 System.exit(-1);
+
+        }
+	}
+	
+	private static void queryModify(ArrayList<String> iList, Connection dbconn, String query) {
+		/* Query is the formatted thingy
+		 * 
+		 */
+		Statement stmt = null;
+        
+        String queryMod = query;
+        int indexMod = queryMod.indexOf("iList.get(");
+        	
+        while (indexMod != -1) {
+        	queryMod = queryMod.substring(0, indexMod) + iList.get(
+        			Integer.parseInt("" + queryMod.charAt(indexMod + 10)))
+        			+ queryMod.substring(indexMod + 12);
+        	indexMod = queryMod.indexOf("iList.get(");
+        }
+        
+		try {
+            stmt = dbconn.createStatement();
+            int val = stmt.executeUpdate(queryMod);
+            //dbconn.commit();
+            System.out.println("Done! Affected " + val + " rows.");
+            System.out.println("");
+
+        } catch (SQLException e) {
+
+                System.err.println("*** SQLException:  "
+                    + "Could not fetch query results.");
+                System.err.println("\tMessage:   " + e.getMessage());
+                System.err.println("\tSQLState:  " + e.getSQLState());
+                System.err.println("\tErrorCode: " + e.getErrorCode());
 
         }
 	}
