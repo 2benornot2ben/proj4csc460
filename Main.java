@@ -187,10 +187,16 @@ public class Main {
         	// Where's mark as complete? That's on the user side.
         	System.out.println("f : Assign Ticket (Args: 2)");
         	System.out.println("g : Modify Ticket (Args: 4)");
+        	System.out.println("h : Modify Invoice (Args: 3)");
+        	System.out.println("i : Mark Invoice as Paid (Args: 1)");
+        	
         	System.out.println("q1 : List all bookmarked messages for user (Args: 1)");
         	System.out.println("q2 : List all users with unpaid invoices");
         	System.out.println("q3 : List the most helpful personas");
         	System.out.println("q4 : List activity & rating for members in certain tier (Args: 1)");
+        	System.out.println("q5 : List open support tickets.");
+        	System.out.println("q6 : List all users.");
+        	System.out.println("q7 : List all invoices.");
         	System.out.println("Logout : Return to main menu.");
         	
         	boolean modify = false;
@@ -234,16 +240,29 @@ public class Main {
         			continue;
         		}
         		modify = true;
-        		// How to get the ID's? I duno, might need more queries.
+
         		//queryAssignTicket(inputList, dbconn);
-        	} else if (nextLine[0].toLowerCase().equals("f")) {
+        	} else if (nextLine[0].toLowerCase().equals("g")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Ticket ID: ",
         				"Input Status: ", "Input Duration: ", "Input Outcome or NULL: ") == 1) {
         			continue;
         		}
         		modify = true;
-        		// How to get the ID's? I duno, might need more queries.
+
         		//queryModifyTicket(inputList, dbconn);
+        	} else if (nextLine[0].toLowerCase().equals("h")) {
+        		if (getInput(scanUse, inputList, nextLine, "Input Invoice ID: ",
+        				"Input Amount Due: ", "Input Status: ") == 1) {
+        			continue;
+        		}
+        		modify = true;
+
+        	} else if (nextLine[0].toLowerCase().equals("i")) {
+        		if (getInput(scanUse, inputList, nextLine, "Input Invoice ID: ") == 1) {
+        			continue;
+        		}
+        		modify = true;
+
         	} else if (nextLine[0].toLowerCase().equals("q1")) {
         		if (getInput(scanUse, inputList, nextLine, "Input Username: ") == 1) {
         			continue;
@@ -260,6 +279,12 @@ public class Main {
         			continue;
         		}
         		//querySpecialFour(inputList, dbconn);
+        	} else if (nextLine[0].toLowerCase().equals("q5")) {
+        		
+        	} else if (nextLine[0].toLowerCase().equals("q6")) {
+        		
+        	} else if (nextLine[0].toLowerCase().equals("q7")) {
+        		
         	} else if (nextLine[0].toLowerCase().startsWith("logout")) {
         		break;
         	} else {
@@ -295,7 +320,11 @@ public class Main {
         	System.out.println("da : Create Prompt (Args: 3)");
         	System.out.println("db : Modify Prompt (Args: 2)");
         	System.out.println("dc : Share Prompt (Args: 2)");
-        	System.out.println("ea : Create Ticket (Args: 2)");
+        	System.out.println("ea : Create Ticket (Args: 1)");
+        	
+        	System.out.println("q1 : List conversations.");
+        	System.out.println("q2 : List personas.");
+        	System.out.println("q3 : List workspaces.");
         	
         	System.out.println("Logout : Return to main menu.");
         	
@@ -395,6 +424,12 @@ public class Main {
         		}
         		modify = true;
         		//queryCreateTicket(userId, inputList, dbconn);
+        	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("q1")) {
+
+        	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("q2")) {
+
+        	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("q3")) {
+
         	} else if (nextLine[0].toLowerCase().equalsIgnoreCase("logout")) {
         		break;
         	} else {
@@ -490,7 +525,9 @@ public class Main {
             stmt = dbconn.createStatement();
             int val = stmt.executeUpdate(queryMod);
             //dbconn.commit();
-            System.out.println("Done! Affected " + val + " rows.");
+            if (val != 0) System.out.println("Done! Affected " + val + " rows.");
+            else System.out.println("Possible Fail: Affected 0 rows. May be due to "
+            		+ "user error OR simply nothing being eligible.");
             System.out.println("");
 
         } catch (SQLException e) {
@@ -500,56 +537,6 @@ public class Main {
                 System.err.println("\tMessage:   " + e.getMessage());
                 System.err.println("\tSQLState:  " + e.getSQLState());
                 System.err.println("\tErrorCode: " + e.getErrorCode());
-
-        }
-	}
-	
-	public static void exampleQuery(ArrayList<String> inputList, Connection dbconn) {
-		/* An example query.
-		 * Directly ripped from project 3.
-		 * Note you may need to do input validation.
-		 * Though, you can be assured that it is at most 1 word, for every query.
-		 */
-		Statement stmt = null;
-        ResultSet answer = null;
-        
-        String year = inputList.get(0);
-        String db = "bk1.highway" + year;
-        
-		try {
-            stmt = dbconn.createStatement();
-            // Here we go. Oracle handles this one almost entirely.
-            answer = stmt.executeQuery("SELECT sname, count(sname) FROM " + db
-            		+ " GROUP BY sname HAVING count(sname) > 0"
-            		+ " ORDER BY count(sname) DESC");
-            // With some setup, anyways.
-            System.out.println("Top ten states for incidents in " + year + ":");
-            boolean endedEarly = false;
-            if (answer != null) {
-            	for (int i = 0; i < 10; i++) {
-            		// Oracle iterates it for us. How nice.
-            		if (answer.next()) {
-                		System.out.println("#" + (i + 1) + ": " + answer.getString(1) + " had " + answer.getInt(2) + " incident reports.");
-                	} else {
-                		endedEarly = true;
-                		break;
-                	}
-            	}
-            }
-            if (endedEarly) {
-            	// Since then it wouldn't be "ten". Might aswell call it out.
-            	System.out.println("Out of data!");
-            }
-            System.out.println();
-
-        } catch (SQLException e) {
-
-                System.err.println("*** SQLException:  "
-                    + "Could not fetch query results.");
-                System.err.println("\tMessage:   " + e.getMessage());
-                System.err.println("\tSQLState:  " + e.getSQLState());
-                System.err.println("\tErrorCode: " + e.getErrorCode());
-                System.exit(-1);
 
         }
 	}
@@ -581,50 +568,6 @@ public class Main {
         }
 		return -1;
 	}
-	
-	private static void querySpecialOne(ArrayList<String> inputList, Connection dbconn) {
-		/* This may be depreciated in favor of queryPlugin.
-		 */
-		Statement stmt = null;
-        ResultSet answer = null;
-        
-        String username = inputList.get(0);
-        
-		try {
-            stmt = dbconn.createStatement();
-            answer = stmt.executeQuery("SELECT c.title AS conversation_title,"
-            		+ " m.timestamp AS message_time,"
-            		+ " m.sender_role AS sender_role,"
-            		+ " m.content AS message_content"
-            		+ " FROM instuser u\r\n"
-            		+ " JOIN conversation c ON u.userid = c.userid"
-            		+ " JOIN message m ON c.chatid = m.chatid"
-            		+ " WHERE u.username = " + username
-            		+ " AND m.bookmarked = 1\r\n"
-            		+ " ORDER BY m.timestamp");
-            if (answer != null) {
-            	ResultSetMetaData deta = answer.getMetaData();
-            	int columns = deta.getColumnCount();
-            	while (answer.next()) {
-            		printLine(deta, answer, columns);
-            		//System.out.println("Title: " + answer.getString(1) + " Timestamp: " + answer.getDate(2)
-            		//+ " Role: " + answer.getString(3) + " Message: " + answer.getString(4));
-            	}
-            }
-            System.out.println();
-
-        } catch (SQLException e) {
-
-                System.err.println("*** SQLException:  "
-                    + "Could not fetch query results.");
-                System.err.println("\tMessage:   " + e.getMessage());
-                System.err.println("\tSQLState:  " + e.getSQLState());
-                System.err.println("\tErrorCode: " + e.getErrorCode());
-                System.exit(-1);
-
-        }
-	}
-	
 	
 	private static void printLine(ResultSetMetaData mSet, ResultSet set, int columns) throws SQLException {
 		StringBuilder buildor = new StringBuilder();
