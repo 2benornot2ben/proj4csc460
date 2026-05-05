@@ -1,26 +1,46 @@
-
-ADMINa: blah blah blahHH
+ADMINa: "
 ADMINb: "
-ADMINc: "
-ADMINd: "
-ADMINe: "
-ADMINf: "
-ADMINg: "
-ADMINq1: SELECT c.title AS conversation_title, m.timestamp AS message_time, m.sender_role AS sender_role, m.content AS message_content FROM instuser u JOIN conversation c ON u.userid = c.userid JOIN message m ON c.chatid = m.chatid WHERE u.username = iList.get(0) AND m.bookmarked = 1 ORDER BY m.timestamp
+ADMINc: DELETE FROM instuser u WHERE u.username = 'iList.get(0)' AND NOT EXISTS (SELECT 1 FROM invoice i WHERE i.userid = u.userid AND UPPER(i.payment_status) = 'UNPAID') AND NOT EXISTS (SELECT 1 FROM supportticket st WHERE st.userid = u.userid AND UPPER(st.status) IN ('OPEN', 'IN_PROGRESS', 'ESCALATED'))
+ADMINd: UPDATE instuser SET tier_name = 'iList.get(1)' WHERE username = 'iList.get(0)' AND EXISTS (SELECT 1 FROM membershiptier mt WHERE mt.tier_name = 'iList.get(1)')
+ADMINe: INSERT INTO invoice (invoice_id, userid, amount, invoice_date, payment_status) SELECT (SELECT NVL(MAX(invoice_id), 0) + 1 FROM invoice), u.userid, CASE u.tier_name WHEN 'Free' THEN 0 WHEN 'Plus' THEN 20 WHEN 'Enterprise' THEN 100 ELSE 0 END, SYSDATE, 'UNPAID' FROM instuser u WHERE u.username = 'iList.get(0)'
+ADMINf: UPDATE supportticket SET agent_id = iList.get(1), status = 'IN_PROGRESS' WHERE ticket_id = iList.get(0)
+ADMINg: UPDATE supportticket SET status = 'iList.get(1)', duration = iList.get(2), outcome = CASE WHEN UPPER('iList.get(3)') = 'NULL' THEN NULL ELSE 'iList.get(3)' END WHERE ticket_id = iList.get(0)
+ADMINq1: SELECT c.title AS conversation_title, m.timestamp AS message_time, m.sender_role AS sender_role, m.content AS message_content FROM instuser u JOIN conversation c ON u.userid = c.userid JOIN message m ON c.chatid = m.chatid WHERE u.username = 'iList.get(0)' AND m.bookmarked = 1 ORDER BY m.timestamp
 ADMINq2: SELECT u.username AS username, u.email AS email, SUM(i.amount) AS total_amount_owed, MAX(c.created_at) AS last_conversation_date FROM instuser u JOIN invoice i ON u.userid = i.userid LEFT JOIN conversation c ON u.userid = c.userid WHERE UPPER(i.payment_status) = 'UNPAID' GROUP BY u.username, u.email ORDER BY total_amount_owed DESC, u.username
 ADMINq3: SELECT * FROM ( SELECT p.persona_name AS persona_name, ROUND(100 * SUM(CASE WHEN f.rating > 0 THEN 1 ELSE 0 END) / COUNT(f.feedback_id), 2) AS thumbs_up_percent, COUNT(f.feedback_id) AS feedback_count FROM persona p JOIN conversation c ON p.persona_id = c.persona_id JOIN message m ON c.chatid = m.chatid JOIN feedback f ON f.message_id = m.message_id WHERE m.sender_role = 'AI' GROUP BY p.persona_name HAVING COUNT(f.feedback_id) > 0 ORDER BY thumbs_up_percent DESC, feedback_count DESC ) WHERE ROWNUM = 1
-ADMINq4: SELECT u.username AS username, mt.tier_name AS tier_name, COUNT(m.message_id) AS message_count, ROUND(AVG(f.rating), 2) AS avg_feedback_rating FROM instuser u JOIN membershiptier mt ON u.tier_name = mt.tier_name LEFT JOIN conversation c ON u.userid = c.userid LEFT JOIN message m ON c.chatid = m.chatid LEFT JOIN feedback f ON f.message_id = m.message_id WHERE mt.tier_name = iList.get(0) GROUP BY u.username, mt.tier_name ORDER BY message_count DESC, avg_feedback_rating DESC, u.username
+ADMINq4: SELECT u.username AS username, mt.tier_name AS tier_name, COUNT(m.message_id) AS message_count, ROUND(AVG(f.rating), 2) AS avg_feedback_rating FROM instuser u JOIN membershiptier mt ON u.tier_name = mt.tier_name LEFT JOIN conversation c ON u.userid = c.userid LEFT JOIN message m ON c.chatid = m.chatid LEFT JOIN feedback f ON f.message_id = m.message_id WHERE mt.tier_name = 'iList.get(0)' GROUP BY u.username, mt.tier_name ORDER BY message_count DESC, avg_feedback_rating DESC, u.username
 
-USERaa: "
-USERab: "
-USERac: "
-USERba: "
-USERab: "
-USERac: "
-USERca: "
-USERab: "
-USERac: "
-USERda: "
-USERdb: "
-USERdc: "
-USERea: "
+USERaa: INSERT INTO conversation (chatid, userid, workid, persona_id, title, persona_snapshot, created_at, status) SELECT (SELECT NVL(MAX(chatid), 0) + 1 FROM conversation), iList.get(0), NULL, p.persona_id, 'iList.get(1)', p.instruction_text, SYSDATE, 'ONGOING' FROM persona p WHERE p.persona_name = 'iList.get(2)' AND ROWNUM = 1
+USERab: INSERT ALL INTO message (message_id, chatid, sender_role, content, timestamp, bookmarked, feedback_id) VALUES ((SELECT NVL(MAX(message_id), 0) + 1 FROM message), chatid, 'USER', 'iList.get(2)', SYSDATE, 0, NULL) INTO message (message_id, chatid, sender_role, content, timestamp, bookmarked, feedback_id) VALUES ((SELECT NVL(MAX(message_id), 0) + 2 FROM message), chatid, 'AI', 'iList.get(3)', SYSDATE, 0, NULL) SELECT c.chatid FROM conversation c JOIN instuser u ON c.userid = u.userid JOIN membershiptier mt ON u.tier_name = mt.tier_name WHERE c.userid = iList.get(0) AND c.title = 'iList.get(1)' AND u.messages_today < mt.max_messages_per_day
+USERac: MERGE INTO feedback f USING (SELECT iList.get(2) AS message_id FROM dual) src ON (f.message_id = src.message_id) WHEN MATCHED THEN UPDATE SET f.review = CASE WHEN UPPER('iList.get(3)') = 'NULL' THEN NULL ELSE 'iList.get(3)' END, f.rating = CASE WHEN UPPER('iList.get(4)') = 'NULL' THEN NULL ELSE TO_NUMBER('iList.get(4)') END WHEN NOT MATCHED THEN INSERT (feedback_id, message_id, rating, review) VALUES ((SELECT NVL(MAX(feedback_id), 0) + 1 FROM feedback), src.message_id, CASE WHEN UPPER('iList.get(4)') = 'NULL' THEN NULL ELSE TO_NUMBER('iList.get(4)') END, CASE WHEN UPPER('iList.get(3)') = 'NULL' THEN NULL ELSE 'iList.get(3)' END)
+USERba: UPDATE conversation c SET workid = (SELECT w.workid FROM workspace w JOIN workspacemember wm ON w.workid = wm.workid WHERE w.workspace_name = 'iList.get(2)' AND wm.userid = iList.get(0) AND ROWNUM = 1) WHERE c.userid = iList.get(0) AND c.title = 'iList.get(1)'
+USERbb: UPDATE conversation c SET workid = NULL WHERE c.userid = iList.get(0) AND c.title = 'iList.get(1)' AND c.workid IN (SELECT wm.workid FROM workspacemember wm WHERE wm.userid = iList.get(0))
+USERbc: UPDATE workspace w SET visibility = 'iList.get(2)' WHERE w.workspace_name = 'iList.get(1)' AND w.owner_userid = iList.get(0)
+USERca: INSERT INTO persona (persona_id, persona_name, instruction_text, created_by_userid) VALUES ((SELECT NVL(MAX(persona_id), 0) + 1 FROM persona), 'iList.get(1)', 'iList.get(2)', iList.get(0))
+USERcb: UPDATE persona SET instruction_text = 'iList.get(2)' WHERE created_by_userid = iList.get(0) AND persona_name = 'iList.get(1)'
+USERcc: DELETE FROM persona p WHERE p.created_by_userid = iList.get(0) AND p.persona_name = 'iList.get(1)' AND 5 >= (SELECT COUNT(*) FROM conversation c WHERE c.persona_id = p.persona_id AND UPPER(c.status) = 'ONGOING')
+USERda: INSERT INTO prompttemplate (prompt_id, created_by_userid, workid, prompt_name, category, prompt_text, visibility) VALUES ((SELECT NVL(MAX(prompt_id), 0) + 1 FROM prompttemplate), iList.get(0), NULL, 'iList.get(1)', 'iList.get(2)', 'iList.get(3)', 'PRIVATE')
+USERdb: UPDATE prompttemplate SET prompt_text = 'iList.get(2)' WHERE created_by_userid = iList.get(0) AND prompt_name = 'iList.get(1)'
+USERdc: UPDATE prompttemplate p SET workid = (SELECT w.workid FROM workspace w JOIN workspacemember wm ON w.workid = wm.workid WHERE w.workspace_name = 'iList.get(2)' AND wm.userid = iList.get(0) AND ROWNUM = 1), visibility = 'WORKSPACE' WHERE p.created_by_userid = iList.get(0) AND p.prompt_name = 'iList.get(1)'
+USERea: INSERT INTO supportticket (ticket_id, userid, agent_id, topic, status, duration, outcome) VALUES ((SELECT NVL(MAX(ticket_id), 0) + 1 FROM supportticket), iList.get(0), NULL, 'iList.get(1)', 'OPEN', NULL, NULL)
+DEBUGa: SELECT table_name FROM user_tables ORDER BY table_name
+
+ADMINq5: SELECT st.ticket_id, u.username, st.topic, st.status, st.agent_id FROM supportticket st JOIN instuser u ON st.userid = u.userid WHERE UPPER(st.status) <> 'RESOLVED' ORDER BY st.ticket_id
+
+USERq1: SELECT chatid, title, status, workid, persona_id FROM conversation WHERE userid = iList.get(0) ORDER BY created_at DESC
+
+USERq2: SELECT persona_id, persona_name FROM persona WHERE created_by_userid = iList.get(0) ORDER BY persona_name
+
+USERq3: SELECT w.workid, w.workspace_name, w.visibility, wm.role FROM workspace w JOIN workspacemember wm ON w.workid = wm.workid WHERE wm.userid = iList.get(0) ORDER BY w.workspace_name
+
+ADMINq6: SELECT userid, username, email, tier_name FROM instuser ORDER BY userid
+
+ADMINq7: SELECT i.invoice_id, i.userid, u.username, i.amount, i.invoice_date, i.payment_status FROM invoice i JOIN instuser u ON i.userid = u.userid ORDER BY i.invoice_id
+
+ADMINh: UPDATE invoice SET amount = iList.get(1), payment_status = 'iList.get(2)' WHERE invoice_id = iList.get(0)
+
+ADMINi: UPDATE invoice SET payment_status = 'PAID' WHERE invoice_id = iList.get(0)
+
+USERq4: SELECT m.message_id, c.title, m.sender_role, m.content, m.timestamp, m.bookmarked FROM conversation c JOIN message m ON c.chatid = m.chatid WHERE c.userid = iList.get(0) AND c.title = 'iList.get(1)' ORDER BY m.timestamp
+
+USERq5: SELECT f.feedback_id, m.message_id, c.title, m.content, f.rating, f.review FROM conversation c JOIN message m ON c.chatid = m.chatid JOIN feedback f ON f.message_id = m.message_id WHERE c.userid = iList.get(0) AND c.title = 'iList.get(1)' ORDER BY m.timestamp
